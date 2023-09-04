@@ -8,4 +8,6 @@ public interface GameService {
      * @return new game
      */
     KalahaGame createNewGame();
+
+    KalahaGame getGame(Integer gameId);
 }
