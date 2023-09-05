@@ -5,7 +5,10 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum KalahaGameExceptionCodes {
 
-    GAME_ID_NOT_FOUND(HttpStatus.NOT_FOUND);
+    GAME_ID_NOT_FOUND(HttpStatus.NOT_FOUND),
+    INVALID_SELECTION(HttpStatus.BAD_REQUEST),
+
+   GAME_OVER(HttpStatus.CONFLICT) ;
 
     private final HttpStatus httpStatus;
 

@@ -10,4 +10,6 @@ public interface GameService {
     KalahaGame createNewGame();
 
     KalahaGame getGame(Integer gameId);
+
+    KalahaGame playGame(Integer gameId, Integer pitId);
 }
