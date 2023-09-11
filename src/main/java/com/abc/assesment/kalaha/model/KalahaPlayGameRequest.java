@@ -14,5 +14,5 @@ public class KalahaPlayGameRequest {
     @Min(value = 1, message = "GameId cannot be less than 1")
     private Integer gameId;
     @NonNull
-    private Integer pitId;
+    private Integer selectedPitId;
 }

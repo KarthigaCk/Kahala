@@ -38,11 +38,11 @@ public class GameServiceImpl implements GameService {
     @Override
     public KalahaGame createNewGame() {
         KalahaGameEntity kalahaGameEntity = KalahaGameEntity.builder()
-                                                      .gameId(count.incrementAndGet())
-                                                      .gameStatus(IN_PROGRESS)
-                                                      .playersTurn(PLAYER_ONE)
-                                                      .kalahaPits(addDefaultStones())
-                                                      .build();
+                                                            .gameId(count.incrementAndGet())
+                                                            .gameStatus(IN_PROGRESS)
+                                                            .playersTurn(PLAYER_ONE)
+                                                            .kalahaPits(addDefaultStones())
+                                                            .build();
         kalahaRepository.save(kalahaGameEntity);
         log.info("New Game Started");
         return mapKahalaGamefromEntity(kalahaGameEntity);
@@ -75,12 +75,8 @@ public class GameServiceImpl implements GameService {
         if (stonesInPit == 0) {
             throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_PITID_SELECTION, "Please select a pit with stones");
         }
-        boolean isLastStoneOnPlayerSide = false;
         //Sowing stones
-        sowStones(kalahaGameEntity,pitId,stonesInPit,isLastStoneOnPlayerSide);
-        if (isLastStoneOnPlayerSide) {
-            kalahaGameEntity.setPlayersTurn(kalahaGameEntity.getPlayersTurn() == PLAYER_ONE ? PLAYER_ONE : PLAYER_TWO);
-        }
+        sowStones(kalahaGameEntity,pitId,stonesInPit);
         if (isGameOver(kalahaGameEntity)) {
             setWinner(kalahaGameEntity);
         }
@@ -89,7 +85,8 @@ public class GameServiceImpl implements GameService {
 
         return mapKahalaGamefromEntity(kalahaGameEntity);
     }
-    private void sowStones(KalahaGameEntity kalahaGameEntity,Integer pitId,Integer stonesInPit, boolean isLastStoneOnPlayerSide) {
+    private void sowStones(KalahaGameEntity kalahaGameEntity,Integer pitId,Integer stonesInPit) {
+        boolean isLastStoneOnPlayerSide = false;
         List<KalahaPitEntity> allPits = kalahaGameEntity.getKalahaPits();
         clearSelectedPit(allPits, pitId);
         for (int i = 1; i <= stonesInPit; i++) {
@@ -120,6 +117,9 @@ public class GameServiceImpl implements GameService {
             allPits.get(pitId).addStones(1);
             pitId++;
 
+        }
+        if (!isLastStoneOnPlayerSide) {
+            kalahaGameEntity.setPlayersTurn(kalahaGameEntity.getPlayersTurn() == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE);
         }
         kalahaGameEntity.setKalahaPits(allPits);
     }
@@ -178,8 +178,8 @@ public class GameServiceImpl implements GameService {
             addAllStonesToHouseIndex(PLAYER_ONE.getId(), kalahaGameEntity.getKalahaPits());
             addAllStonesToHouseIndex(PLAYER_TWO.getId(), kalahaGameEntity.getKalahaPits());
             kalahaGameEntity.getKalahaPits().stream()
-                                      .filter(kalahaPit -> kalahaPit.getPitId() != 7 && kalahaPit.getPitId() != 14)
-                                      .forEach(KalahaPitEntity::clear);
+                                            .filter(kalahaPit -> kalahaPit.getPitId() != 7 && kalahaPit.getPitId() != 14)
+                                            .forEach(KalahaPitEntity::clear);
             return true;
         }
         return false;

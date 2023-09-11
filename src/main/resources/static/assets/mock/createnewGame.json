@@ -1,0 +1,63 @@
+{
+  "gameId": 1,
+  "playersTurn": "PLAYER_ONE",
+  "gameStatus": "In progress",
+  "kalahaPits": [
+      {
+          "pitId": 1,
+          "stones": 6
+      },
+      {
+          "pitId": 2,
+          "stones": 6
+      },
+      {
+          "pitId": 3,
+          "stones": 6
+      },
+      {
+          "pitId": 4,
+          "stones": 6
+      },
+      {
+          "pitId": 5,
+          "stones": 6
+      },
+      {
+          "pitId": 6,
+          "stones": 6
+      },
+      {
+          "pitId": 7,
+          "stones": 0
+      },
+      {
+          "pitId": 8,
+          "stones": 6
+      },
+      {
+          "pitId": 9,
+          "stones": 6
+      },
+      {
+          "pitId": 10,
+          "stones": 6
+      },
+      {
+          "pitId": 11,
+          "stones": 6
+      },
+      {
+          "pitId": 12,
+          "stones": 6
+      },
+      {
+          "pitId": 13,
+          "stones": 6
+      },
+      {
+          "pitId": 14,
+          "stones": 0
+      }
+  ]
+}

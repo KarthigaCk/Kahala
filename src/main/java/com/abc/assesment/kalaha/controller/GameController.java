@@ -34,7 +34,7 @@ public class GameController {
     /**
      * @return
      */
-    @PostMapping
+    @PostMapping(value="/createNewGame")
     public ResponseEntity<KalahaGame> createNewGame() {
         KalahaGame kahalaGame = gameService.createNewGame();
         log.info("Game Created");
@@ -59,12 +59,12 @@ public class GameController {
     @PostMapping(value = "/playGame")
     public ResponseEntity<KalahaGame> playGame(@RequestBody(required = true)
                                                @Valid KalahaPlayGameRequest playGameRequest) {
-        if (isInvalidPitId(playGameRequest.getPitId())) {
+        if (isInvalidPitId(playGameRequest.getSelectedPitId())) {
             throw new KalahaGameException(INVALID_PITID_SELECTION,
                                           "Invalid pit index. Pit id or index should be between 1-6 or 8-13");
         }
         log.info("Play game service called");
-        KalahaGame kalahaGame = gameService.playGame(playGameRequest.getGameId(), playGameRequest.getPitId());
+        KalahaGame kalahaGame = gameService.playGame(playGameRequest.getGameId(), playGameRequest.getSelectedPitId());
         return ResponseEntity.status(HttpStatus.OK).body(kalahaGame);
     }
     private boolean isInvalidPitId(int pitId) {
