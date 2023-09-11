@@ -6,7 +6,6 @@ import lombok.Getter;
 public enum Player {
     PLAYER_ONE(1),
     PLAYER_TWO(2);
-
     private Integer id;
 
     Player(Integer id) {

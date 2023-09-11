@@ -5,8 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class KalahaGameException extends RuntimeException{
-
+public class KalahaGameException extends RuntimeException {
     private final KalahaGameExceptionCodes exceptionCode;
     private final String message;
 
@@ -15,5 +14,4 @@ public class KalahaGameException extends RuntimeException{
         this.exceptionCode = exceptionCode;
         this.message = message;
     }
-
 }

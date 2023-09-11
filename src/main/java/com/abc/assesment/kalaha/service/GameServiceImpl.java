@@ -4,18 +4,24 @@ import com.abc.assesment.kalaha.exception.KalahaGameException;
 import com.abc.assesment.kalaha.exception.KalahaGameExceptionCodes;
 import com.abc.assesment.kalaha.model.KalahaGame;
 import com.abc.assesment.kalaha.model.KalahaPit;
-import com.abc.assesment.kalaha.repository.KalahaRepository;
+import com.abc.assesment.kalaha.persistance.entity.KalahaGameEntity;
+import com.abc.assesment.kalaha.persistance.entity.KalahaPitEntity;
+import com.abc.assesment.kalaha.persistance.repository.KalahaRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import static com.abc.assesment.kalaha.constants.GameConstants.*;
+import static com.abc.assesment.kalaha.constants.GameConstants.DEFAULT_STONES;
+import static com.abc.assesment.kalaha.constants.GameConstants.IN_PROGRESS;
+import static com.abc.assesment.kalaha.constants.GameConstants.PLAYER_ONE_HOUSE_INDEX;
+import static com.abc.assesment.kalaha.constants.GameConstants.PLAYER_TWO_HOUSE_INDEX;
+import static com.abc.assesment.kalaha.constants.GameConstants.TOTAL_PITS;
 import static com.abc.assesment.kalaha.model.Player.PLAYER_ONE;
 import static com.abc.assesment.kalaha.model.Player.PLAYER_TWO;
 
@@ -24,219 +30,226 @@ import static com.abc.assesment.kalaha.model.Player.PLAYER_TWO;
 public class GameServiceImpl implements GameService {
 
     private static final AtomicInteger count = new AtomicInteger(0);
-    @Autowired
-    KalahaRepository kalahaRepository;
+    private final KalahaRepository kalahaRepository;
 
-    public KalahaGame createNewGame() {
-
-        KalahaGame kalahaGame = KalahaGame.builder().gameId(count.incrementAndGet()).gameStatus(
-                IN_PROGRESS).playersTurn(PLAYER_ONE).kalahaPits(
-                addDefaultStones(DEFAULT_STONES)).build();
-        kalahaRepository.save(kalahaGame);
-        log.info("New Game Started");
-        return kalahaGame;
+    public GameServiceImpl(KalahaRepository kalahaRepository) {
+        this.kalahaRepository = kalahaRepository;
     }
-
     @Override
-    public KalahaGame getGame(Integer gameId) {
-
-        Optional<KalahaGame> kalahaGame = kalahaRepository.findById(gameId);
-        if (kalahaGame.isEmpty())
-            throw new KalahaGameException(KalahaGameExceptionCodes.GAME_ID_NOT_FOUND, "Game id is not available");
+    public KalahaGame createNewGame() {
+        KalahaGameEntity kalahaGameEntity = KalahaGameEntity.builder()
+                                                      .gameId(count.incrementAndGet())
+                                                      .gameStatus(IN_PROGRESS)
+                                                      .playersTurn(PLAYER_ONE)
+                                                      .kalahaPits(addDefaultStones())
+                                                      .build();
+        kalahaRepository.save(kalahaGameEntity);
+        log.info("New Game Started");
+        return mapKahalaGamefromEntity(kalahaGameEntity);
+    }
+    @Override
+    public KalahaGame getGameInfo(Integer gameId) {
+        KalahaGameEntity kalahaGameEntity = getKalahaGameEntity(gameId);
         log.info("GameService call completed");
-        return kalahaGame.get();
+        return mapKahalaGamefromEntity(kalahaGameEntity);
     }
 
     @Override
     public KalahaGame playGame(Integer gameId, Integer pitId) {
 
         log.info("Play game service started");
-        KalahaGame kalahaGame = getGame(gameId);
-
-        if (!kalahaGame.getGameStatus().equals(IN_PROGRESS)) {
-            throw new KalahaGameException(KalahaGameExceptionCodes.GAME_OVER,
-                                          kalahaGame.getGameId() + " Game is not in progress. Game status : " + kalahaGame.getGameStatus());
+        KalahaGameEntity kalahaGameEntity = getKalahaGameEntity(gameId);
+        if (!kalahaGameEntity.getGameStatus().equals(IN_PROGRESS)) {
+            throw new KalahaGameException(KalahaGameExceptionCodes.GAME_OVER, kalahaGameEntity.getGameId()
+                                                                                + " Game is not in progress. Game status : "
+                                                                                + kalahaGameEntity.getGameStatus());
         }
-
         //If player has selected other player's pit, throw an exception
-        validatePitSelection(kalahaGame, pitId);
-
-        //Get stones in the pit
-        KalahaPit selectedPit = kalahaGame.getPitDetailsById(pitId);
-        Integer stonesInPit = selectedPit.getStones();
-
-        // Check if the selected pit has stones
-        if (stonesInPit == 0) {
-            throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_SELECTION,
-                                          "Please select a pit with stones");
+        if(isValidPitSelection(kalahaGameEntity, pitId)){
+            throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_PITID_SELECTION, "Please select your own pit"
+                                                                                       + kalahaGameEntity.getPlayersTurn());
         }
+        //Get stones from the selected pit
+        Integer stonesInPit = kalahaGameEntity.getPitDetailsById(pitId).getStones();
+        //Check if the selected pit has stones
+        if (stonesInPit == 0) {
+            throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_PITID_SELECTION, "Please select a pit with stones");
+        }
+        boolean isLastStoneOnPlayerSide = false;
+        //Sowing stones
+        sowStones(kalahaGameEntity,pitId,stonesInPit,isLastStoneOnPlayerSide);
+        if (isLastStoneOnPlayerSide) {
+            kalahaGameEntity.setPlayersTurn(kalahaGameEntity.getPlayersTurn() == PLAYER_ONE ? PLAYER_ONE : PLAYER_TWO);
+        }
+        if (isGameOver(kalahaGameEntity)) {
+            setWinner(kalahaGameEntity);
+        }
+        kalahaRepository.save(kalahaGameEntity);
+        log.info("Play game service completed");
 
-        List<KalahaPit> allPits = kalahaGame.getKalahaPits();
-        //clear the chosen pit
-        allPits.get(pitId - 1).clear();
-
-        boolean houseIndex = false;
-
+        return mapKahalaGamefromEntity(kalahaGameEntity);
+    }
+    private void sowStones(KalahaGameEntity kalahaGameEntity,Integer pitId,Integer stonesInPit, boolean isLastStoneOnPlayerSide) {
+        List<KalahaPitEntity> allPits = kalahaGameEntity.getKalahaPits();
+        clearSelectedPit(allPits, pitId);
         for (int i = 1; i <= stonesInPit; i++) {
-
-            if (i == stonesInPit) {//last stone
+            /*The last stone lands in an own empty pit, the player
+            captures his own stone and all stones in the opposite pit */
+            if (i == stonesInPit) {
                 int nextPitId = pitId + 1;
-                boolean isNextPitOwn = isNextPitOwn(kalahaGame, nextPitId);
-                if (isNextPitOwn) {
-                    KalahaPit nextPit = kalahaGame.getPitDetailsById(nextPitId);
-                    if (nextPit.isEmpty()) {//capturing stones
-                        captureStones(kalahaGame, nextPitId, allPits);
+                if (isNextPitOwnedByPlayer(kalahaGameEntity, nextPitId)) {
+                    KalahaPitEntity nextPit = kalahaGameEntity.getPitDetailsById(nextPitId);
+                    if (nextPit.isEmpty()) {
+                        captureStonesFromOpponent(kalahaGameEntity, nextPitId, allPits);
                         break;
                     }
                 }
             }
-
-            // Handle circular movement between pits
-            pitId = (pitId % TOTAL_PITS);//check if this works
-
-            //skipping  opposite player's house pit
-            if (shouldSkipOthersHousePit(kalahaGame, pitId)) {
+            //Handle circular movement between pits
+            pitId = (pitId % TOTAL_PITS);
+            //Skipping  opponent's house pit
+            if (shouldSkipOthersHousePit(kalahaGameEntity, pitId)) {
                 i--;
                 pitId++;
                 continue;
             }
-
-            // if the last stone is added in the player's house they get one more chance
-            if (i == stonesInPit && shouldGiveExtraTurn(kalahaGame, pitId)) {
-                houseIndex = true;
+            // If the last stone is added in the player's house they get one more chance
+            if (i == stonesInPit && shouldGiveExtraTurn(kalahaGameEntity, pitId)) {
+                isLastStoneOnPlayerSide = true;
             }
-
-            //adding stones
             allPits.get(pitId).addStones(1);
-
             pitId++;
 
         }
-        kalahaGame.setKalahaPits(allPits);
-
-        if (!houseIndex) {
-            kalahaGame.setPlayersTurn(kalahaGame.getPlayersTurn() == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE);
-        }
-
-        if (isGameOver(kalahaGame)) {
-            setWinner(kalahaGame);
-        }
-
-        kalahaRepository.save(kalahaGame);
-
-        log.info("Play game service completed");
-
-        return kalahaGame;
+        kalahaGameEntity.setKalahaPits(allPits);
+    }
+    private void clearSelectedPit(List<KalahaPitEntity> allPits, int pitId) {
+        allPits.get(pitId - 1).clear();
+    }
+    private boolean shouldGiveExtraTurn(KalahaGameEntity kalahaGameEntity, Integer pitId) {
+        return ((kalahaGameEntity.getPlayersTurn() == PLAYER_ONE && pitId == PLAYER_ONE_HOUSE_INDEX)
+                || (kalahaGameEntity.getPlayersTurn() == PLAYER_TWO && pitId == PLAYER_TWO_HOUSE_INDEX));
     }
 
-    private boolean shouldGiveExtraTurn(KalahaGame kalahaGame, Integer pitId) {
-        return ((kalahaGame.getPlayersTurn() == PLAYER_ONE && pitId == PLAYER_ONE_HOUSE_PIT)
-                || (kalahaGame.getPlayersTurn() == PLAYER_TWO && pitId == PLAYER_TWO_HOUSE_PIT));
+    private boolean shouldSkipOthersHousePit(KalahaGameEntity kalahaGameEntity, Integer pitId) {
+        return ((kalahaGameEntity.getPlayersTurn() != PLAYER_ONE && pitId == PLAYER_ONE_HOUSE_INDEX)
+                || (kalahaGameEntity.getPlayersTurn() != PLAYER_TWO  && pitId == PLAYER_TWO_HOUSE_INDEX));
     }
 
-    private boolean shouldSkipOthersHousePit(KalahaGame kalahaGame, Integer pitId) {
-        return ((pitId == PLAYER_ONE_HOUSE_PIT && kalahaGame.getPlayersTurn() != PLAYER_ONE)
-                || (pitId == PLAYER_TWO_HOUSE_PIT && kalahaGame.getPlayersTurn() != PLAYER_TWO));
-    }
-
-    private void captureStones(KalahaGame kalahaGame, Integer nextPitId, List<KalahaPit> allPits) {
-        int oppositePitIndex = TOTAL_PITS - nextPitId;
-        int stonesInOppPit = kalahaGame.getPitDetailsById(oppositePitIndex).getStones();
-        int housePitIndex = kalahaGame.getPlayersTurn() == PLAYER_ONE ? PLAYER_ONE_HOUSE_PIT : PLAYER_TWO_HOUSE_PIT;
+    private void captureStonesFromOpponent(KalahaGameEntity kalahaGameEntity, Integer nextPitId, List<KalahaPitEntity> allPits) {
+        int oppositePitId = TOTAL_PITS - nextPitId;
+        int stonesInOppPit = kalahaGameEntity.getPitDetailsById(oppositePitId).getStones();
+        int housePitIndex = kalahaGameEntity.getPlayersTurn() == PLAYER_ONE ? PLAYER_ONE_HOUSE_INDEX : PLAYER_TWO_HOUSE_INDEX;
         allPits.get(housePitIndex).addStones(stonesInOppPit + 1);
-        allPits.get(oppositePitIndex - 1).clear();
+        allPits.get(oppositePitId - 1).clear();
     }
 
-    private boolean isNextPitOwn(KalahaGame kalahaGame, Integer nextPitId) {
-        return ((kalahaGame.getPlayersTurn() == PLAYER_ONE && nextPitId < 7)
-                || (kalahaGame.getPlayersTurn() == PLAYER_TWO && (nextPitId > 7 && nextPitId < 14)));
+    private boolean isNextPitOwnedByPlayer(KalahaGameEntity kalahaGameEntity, Integer nextPitId) {
+        return ((kalahaGameEntity.getPlayersTurn() == PLAYER_ONE && nextPitId < 7)
+                || (kalahaGameEntity.getPlayersTurn() == PLAYER_TWO && (nextPitId > 7 && nextPitId < 14)));
     }
 
-    private void validatePitSelection(KalahaGame kalahaGame, Integer pitId) {
-
-        if ((kalahaGame.getPlayersTurn() == PLAYER_ONE && pitId > 6)
-                || (kalahaGame.getPlayersTurn() == PLAYER_TWO && pitId < 8)) {
-            throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_SELECTION,
-                                          "Please select your own pit" + kalahaGame.getPlayersTurn());
-        }
-
+    private boolean isValidPitSelection(KalahaGameEntity kalahaGameEntity, Integer pitId) {
+       return ((kalahaGameEntity.getPlayersTurn() == PLAYER_ONE && pitId > 6)
+                || (kalahaGameEntity.getPlayersTurn() == PLAYER_TWO && pitId < 8));
     }
 
-    private void setWinner(KalahaGame kalahaGame) {
-        Integer playerAStones = kalahaGame.getKalahaPits().get(PLAYER_ONE_HOUSE_PIT).getStones();
-        Integer playerBStones = kalahaGame.getKalahaPits().get(PLAYER_TWO_HOUSE_PIT).getStones();
+    private void setWinner(KalahaGameEntity kalahaGameEntity) {
+        Integer playerAStones = kalahaGameEntity.getKalahaPits().get(PLAYER_ONE_HOUSE_INDEX).getStones();
+        Integer playerBStones = kalahaGameEntity.getKalahaPits().get(PLAYER_TWO_HOUSE_INDEX).getStones();
 
         switch (playerAStones.compareTo(playerBStones)) {
             case 0:
-                kalahaGame.setGameStatus("It is a tie!");
+                kalahaGameEntity.setGameStatus("It is a tie!");
                 break;
             case -1:
-                kalahaGame.setGameStatus("Player 2 wins");
+                kalahaGameEntity.setGameStatus("Player 2 wins");
                 break;
             case 1:
-                kalahaGame.setGameStatus("Player 1 wins");
+                kalahaGameEntity.setGameStatus("Player 1 wins");
                 break;
         }
     }
 
-    private boolean isGameOver(KalahaGame kalahaGame) {
+    private boolean isGameOver(KalahaGameEntity kalahaGameEntity) {
 
-        if (isPlayersNonHousePitsEmpty(PLAYER_ONE.getId(),
-                                       kalahaGame.getKalahaPits()) || isPlayersNonHousePitsEmpty(
-                PLAYER_TWO.getId(),
-                kalahaGame.getKalahaPits())) {
-
-            addAllStonesToHouseIndex(PLAYER_ONE.getId(), kalahaGame.getKalahaPits());
-            addAllStonesToHouseIndex(PLAYER_TWO.getId(), kalahaGame.getKalahaPits());
-            kalahaGame.getKalahaPits().stream().filter(
-                    kalahaPit -> kalahaPit.getPitId() != 7 && kalahaPit.getPitId() != 14).forEach(KalahaPit::clear);
+        if (isPlayersNonHousePitsEmpty(PLAYER_ONE.getId(),kalahaGameEntity.getKalahaPits())
+                                       || isPlayersNonHousePitsEmpty(PLAYER_TWO.getId(),kalahaGameEntity.getKalahaPits())) {
+            addAllStonesToHouseIndex(PLAYER_ONE.getId(), kalahaGameEntity.getKalahaPits());
+            addAllStonesToHouseIndex(PLAYER_TWO.getId(), kalahaGameEntity.getKalahaPits());
+            kalahaGameEntity.getKalahaPits().stream()
+                                      .filter(kalahaPit -> kalahaPit.getPitId() != 7 && kalahaPit.getPitId() != 14)
+                                      .forEach(KalahaPitEntity::clear);
             return true;
         }
         return false;
     }
 
-    private void addAllStonesToHouseIndex(Integer id, List<KalahaPit> kalahaPits) {
+    private void addAllStonesToHouseIndex(Integer id, List<KalahaPitEntity> kalahaPits) {
         if (id == PLAYER_ONE.getId()) {
-            OptionalInt optionalIntSum = kalahaPits.stream().filter(pit -> pit.getPitId() < 7).mapToInt(
-                    KalahaPit::getStones).reduce(Integer::sum);
+            OptionalInt optionalIntSum = kalahaPits.stream()
+                                                   .filter(pit -> pit.getPitId() < 7)
+                                                   .mapToInt(KalahaPitEntity::getStones)
+                                                   .reduce(Integer::sum);
             int sumOfStones = optionalIntSum.isPresent() ? optionalIntSum.getAsInt() : 0;
-            kalahaPits.get(PLAYER_ONE_HOUSE_PIT).addStones(sumOfStones);
+            kalahaPits.get(PLAYER_ONE_HOUSE_INDEX).addStones(sumOfStones);
         }
 
         if (id == PLAYER_TWO.getId()) {
-            OptionalInt optionalIntSum = kalahaPits.stream().filter(
-                    pit -> pit.getPitId() > 7 && pit.getPitId() < 14).mapToInt(KalahaPit::getStones).reduce(
-                    Integer::sum);
+            OptionalInt optionalIntSum = kalahaPits.stream()
+                                                   .filter(pit -> pit.getPitId() > 7 && pit.getPitId() < 14)
+                                                   .mapToInt(KalahaPitEntity::getStones)
+                                                   .reduce(Integer::sum);
             int sumOfStones = optionalIntSum.isPresent() ? optionalIntSum.getAsInt() : 0;
-            kalahaPits.get(PLAYER_TWO_HOUSE_PIT).addStones(sumOfStones);
+            kalahaPits.get(PLAYER_TWO_HOUSE_INDEX).addStones(sumOfStones);
         }
 
     }
 
-    private boolean isPlayersNonHousePitsEmpty(Integer id, List<KalahaPit> kalahaPits) {
+    private boolean isPlayersNonHousePitsEmpty(Integer id, List<KalahaPitEntity> kalahaPits) {
 
-        if (id == PLAYER_ONE.getId()) {
-            return kalahaPits.stream().filter(pit -> pit.getPitId() < 7).allMatch(KalahaPit::isEmpty);
-        }
+        List<KalahaPitEntity> relevantPits = id == PLAYER_ONE.getId()
+                                             ? kalahaPits.stream()
+                                                         .filter(pit -> pit.getPitId() < 7)
+                                                         .collect(Collectors.toList())
+                                             : kalahaPits.stream()
+                                                         .filter(pit -> pit.getPitId() > 7 && pit.getPitId() < 14)
+                                                         .collect(Collectors.toList());
 
-        return kalahaPits.stream().filter(pit -> pit.getPitId() > 7 && pit.getPitId() < 14).allMatch(
-                KalahaPit::isEmpty);
-
+        return relevantPits.stream()
+                           .allMatch(KalahaPitEntity::isEmpty);
     }
 
-
-    private List<KalahaPit> addDefaultStones(int stones) { //creating with default stones
-        List<KalahaPit> kalahaPits = new ArrayList<>();
-        for (int i = 1; i <= TOTAL_PITS; i++) {
-            if (i == 7 || i == 14)//player 1 & 2 kalaha pit
-            {
-                kalahaPits.add(new KalahaPit(i, 0));
-                continue;
-            }
-            kalahaPits.add(new KalahaPit(i, stones));
-        }
-        return kalahaPits;
+    private List<KalahaPitEntity> addDefaultStones() {
+        return IntStream.rangeClosed(1, TOTAL_PITS)
+                        .mapToObj(i -> new KalahaPitEntity(i, (i == 7 || i == 14) ? 0 : DEFAULT_STONES))
+                        .collect(Collectors.toList());
     }
 
+    private KalahaGame mapKahalaGamefromEntity(KalahaGameEntity kalahaGameEntity) {
+        return KalahaGame.builder()
+                         .gameId(kalahaGameEntity.getGameId())
+                         .gameStatus(kalahaGameEntity.getGameStatus())
+                         .playersTurn(kalahaGameEntity.getPlayersTurn())
+                         .kalahaPits(mapKahalaPitsFromEntity(kalahaGameEntity.getKalahaPits()))
+                         .build();
+    }
+
+    private List<KalahaPit> mapKahalaPitsFromEntity(List<KalahaPitEntity> kalahaPitEntities) {
+        return kalahaPitEntities.stream()
+                                 .map(kalahaPitEntity -> KalahaPit.builder()
+                                                                  .pitId(kalahaPitEntity.getPitId())
+                                                                  .stones(kalahaPitEntity.getStones())
+                                                                  .build())
+                                 .collect(Collectors.toList());
+    }
+
+    private KalahaGameEntity getKalahaGameEntity(Integer gameId) {
+
+        Optional<KalahaGameEntity> kalahaGameEntity = kalahaRepository.findById(gameId);
+        if (kalahaGameEntity.isEmpty())
+            throw new KalahaGameException(KalahaGameExceptionCodes.GAME_ID_NOT_FOUND, "Game id is not available");
+        return kalahaGameEntity.get();
+    }
 }
 
