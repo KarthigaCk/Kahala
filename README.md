@@ -1,2 +1,2 @@
-# Kahala
-This is  Kahala game. Hope you enjoy playing!
+# Kalaha
+This is  Kalaha game. Hope you enjoy playing!
