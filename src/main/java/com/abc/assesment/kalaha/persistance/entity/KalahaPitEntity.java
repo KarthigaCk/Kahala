@@ -30,7 +30,6 @@ public class KalahaPitEntity {
         this.stones += stone;
     }
 
-    @JsonIgnore
     public boolean isEmpty() {
         return this.stones == 0;
     }
