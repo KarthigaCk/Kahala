@@ -14,7 +14,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import java.util.List;
 
-
+/**
+ * @author Karthiga
+ * Entity class for Kalaha game
+ */
 @Getter
 @Setter
 @Entity

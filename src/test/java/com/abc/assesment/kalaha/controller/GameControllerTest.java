@@ -32,6 +32,9 @@ import static org.powermock.api.easymock.PowerMock.verifyAll;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
 
+/**
+ * Test cases for {@link GameController}
+ */
 public class GameControllerTest {
     private GameController gameController;
     private GameService mockGameService;

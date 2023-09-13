@@ -1,0 +1,69 @@
+{
+	"info": {
+		"_postman_id": "cb076831-0128-43ce-9f37-abf4557b5953",
+		"name": "Kalaha",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14660437"
+	},
+	"item": [
+		{
+			"name": "createNewGame",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/kahalaGame",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"kahalaGame"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "getGame",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/kahalaGame/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"kahalaGame",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "playGame",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/kahalaGame/playGame",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"kahalaGame",
+						"playGame"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -2,7 +2,10 @@ package com.abc.assesment.kalaha.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
-
+/**
+ * Application specific exception status codes
+ * @author Karthiga
+ */
 @Getter
 public enum KalahaGameExceptionCodes {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR),

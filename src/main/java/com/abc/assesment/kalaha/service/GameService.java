@@ -6,20 +6,24 @@ public interface GameService {
     /**
      * Creates a new game
      *
-     * @return new game
+     * @return KalahaGame New game with default stones added
      */
     KalahaGame createNewGame();
 
     /**
+     * Get the game details
+     *
      * @param gameId
-     * @return
+     * @return Kalaha game with details
      */
     KalahaGame getGameInfo(Integer gameId);
 
     /**
+     * Plays the game
+     *
      * @param gameId
      * @param pitId
-     * @return
+     * @return Kalaha game after making moves with next player and game status info
      */
     KalahaGame playGame(Integer gameId, Integer pitId);
 }

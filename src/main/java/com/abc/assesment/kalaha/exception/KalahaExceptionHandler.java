@@ -12,15 +12,19 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import javax.servlet.http.HttpServletRequest;
 
 import static com.abc.assesment.kalaha.exception.KalahaGameExceptionCodes.INTERNAL_SERVER_ERROR;
-
+/**
+ *  Exception handler for Rest API
+ *
+ * @author Karthiga
+ */
 @RestControllerAdvice
 @Slf4j
 public class KalahaExceptionHandler extends ResponseEntityExceptionHandler {
     /**
-     *
-     * @param exception
+     * Handles all unhandled exceptions
+     * @param exception catches all unhandled exceptions and converts to Http error
      * @param request
-     * @return
+     * @return exception with timestamp,status,message,URI path
      */
     @ExceptionHandler(value = {Exception.class})
     public ResponseEntity<KalahaExceptionDetails> exceptionHandler(Exception exception, HttpServletRequest request) {
@@ -32,10 +36,11 @@ public class KalahaExceptionHandler extends ResponseEntityExceptionHandler {
                                                                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
     /**
+     * Handles all custom exceptions
      *
-     * @param exception
+     * @param exception catches all kalaha exception and converts to Http error
      * @param request
-     * @return
+     * @return exception with timestamp,status,message,URI path
      */
     @ExceptionHandler(value = {KalahaGameException.class})
     public ResponseEntity<KalahaExceptionDetails> exceptionHandler(KalahaGameException exception, HttpServletRequest request) {

@@ -7,7 +7,10 @@ import lombok.Setter;
 
 import javax.validation.constraints.Min;
 
-
+/**
+ * @author Karthiga
+ * Model class for Kalaha play game request
+ */
 @Getter
 @Setter
 @Builder

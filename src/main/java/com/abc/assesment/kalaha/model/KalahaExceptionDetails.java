@@ -4,7 +4,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
-
+/**
+ * @author Karthiga
+ * Model class for Kalaha game exception
+ */
 @Getter
 @RequiredArgsConstructor
 public class KalahaExceptionDetails {

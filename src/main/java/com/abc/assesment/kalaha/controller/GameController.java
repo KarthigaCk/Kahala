@@ -20,7 +20,11 @@ import javax.validation.Valid;
 
 import static com.abc.assesment.kalaha.exception.KalahaGameExceptionCodes.INVALID_PITID_SELECTION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
+/**
+ * @author Karthiga
+ * Controller for Kalaha game controller
+ *
+ * */
 @Slf4j
 @RestController
 @RequestMapping(value = "/kahalaGame", produces = APPLICATION_JSON_VALUE)
@@ -32,7 +36,9 @@ public class GameController {
     }
 
     /**
-     * @return
+     * Creates a new game
+     *
+     * @return KalahaGame New game with default stones added
      */
     @PostMapping(value="/createNewGame")
     public ResponseEntity<KalahaGame> createNewGame() {
@@ -42,8 +48,10 @@ public class GameController {
     }
 
     /**
+     * Get the game details
+     *
      * @param gameId
-     * @return
+     * @return Kalaha game with details
      */
     @GetMapping(value = "/{id}")
     public ResponseEntity<KalahaGame> getGame(@Parameter(required = true)
@@ -53,8 +61,10 @@ public class GameController {
     }
 
     /**
-     * @param playGameRequest
-     * @return
+     * Plays the game
+     *
+     * @param playGameRequest gameId and selected pit Id
+     * @return Kalaha game after making moves with next player and game status info
      */
     @PostMapping(value = "/playGame")
     public ResponseEntity<KalahaGame> playGame(@RequestBody(required = true)
@@ -67,8 +77,8 @@ public class GameController {
         KalahaGame kalahaGame = gameService.playGame(playGameRequest.getGameId(), playGameRequest.getSelectedPitId());
         return ResponseEntity.status(HttpStatus.OK).body(kalahaGame);
     }
-    private boolean isInvalidPitId(int pitId) {
-        return (pitId < 1 || (pitId > 6 && pitId < 8) || pitId > 13);
+    private boolean isInvalidPitId(int selectedPitId) {
+        return (selectedPitId < 1 || (selectedPitId > 6 && selectedPitId < 8) || selectedPitId > 13);
     }
 
 }

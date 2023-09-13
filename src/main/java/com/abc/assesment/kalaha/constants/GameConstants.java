@@ -1,5 +1,8 @@
 package com.abc.assesment.kalaha.constants;
-
+/**
+ * @author Karthiga
+ * Constants for Kalaha game Application
+ */
 public class GameConstants {
     public static final int PLAYER_ONE_HOUSE_INDEX = 6;
     public static final int PLAYER_TWO_HOUSE_INDEX = 13;

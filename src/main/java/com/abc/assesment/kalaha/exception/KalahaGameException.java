@@ -2,7 +2,10 @@ package com.abc.assesment.kalaha.exception;
 
 import lombok.Getter;
 import lombok.Setter;
-
+/**
+ * @author Karthiga
+ * Custom exception class
+ */
 @Getter
 @Setter
 public class KalahaGameException extends RuntimeException {

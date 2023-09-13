@@ -9,7 +9,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
+/**
+ * @author Karthiga
+ * Entity class for Kalaha game pits
+ */
 @Entity
 @Table
 @AllArgsConstructor

@@ -24,7 +24,10 @@ import static com.abc.assesment.kalaha.constants.GameConstants.PLAYER_TWO_HOUSE_
 import static com.abc.assesment.kalaha.constants.GameConstants.TOTAL_PITS;
 import static com.abc.assesment.kalaha.model.Player.PLAYER_ONE;
 import static com.abc.assesment.kalaha.model.Player.PLAYER_TWO;
-
+/**
+ * @author Karthiga
+ * Kalaha game Service
+ */
 @Service
 @Slf4j
 public class GameServiceImpl implements GameService {
@@ -59,7 +62,7 @@ public class GameServiceImpl implements GameService {
 
         log.info("Play game service started");
         KalahaGameEntity kalahaGameEntity = getKalahaGameEntity(gameId);
-        if (!kalahaGameEntity.getGameStatus().equals(IN_PROGRESS)) {
+        if (!isGameInProgress(kalahaGameEntity.getGameStatus())) {
             throw new KalahaGameException(KalahaGameExceptionCodes.GAME_OVER, kalahaGameEntity.getGameId()
                                                                                 + " Game is not in progress. Game status : "
                                                                                 + kalahaGameEntity.getGameStatus());
@@ -85,6 +88,11 @@ public class GameServiceImpl implements GameService {
 
         return mapKahalaGamefromEntity(kalahaGameEntity);
     }
+
+    private boolean isGameInProgress(String gameStatus) {
+        return gameStatus.equals(IN_PROGRESS);
+    }
+
     private void sowStones(KalahaGameEntity kalahaGameEntity,Integer pitId,Integer stonesInPit) {
         boolean isLastStoneOnPlayerSide = false;
         List<KalahaPitEntity> allPits = kalahaGameEntity.getKalahaPits();

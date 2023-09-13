@@ -5,7 +5,6 @@ import com.abc.assesment.kalaha.model.KalahaGame;
 import com.abc.assesment.kalaha.persistance.entity.KalahaGameEntity;
 import com.abc.assesment.kalaha.persistance.entity.KalahaPitEntity;
 import com.abc.assesment.kalaha.persistance.repository.KalahaRepository;
-import org.testng.AssertJUnit;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -31,7 +30,9 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertNull;
 
-
+/**
+ *Test cases for {@link GameServiceImpl}
+ */
 public class GameServiceImplTest {
     private GameService gameService;
     private KalahaRepository mockKalahaRepository;

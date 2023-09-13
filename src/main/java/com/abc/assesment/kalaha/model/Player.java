@@ -1,7 +1,10 @@
 package com.abc.assesment.kalaha.model;
 
 import lombok.Getter;
-
+/**
+ * @author Karthiga
+ * Model class for players
+ */
 @Getter
 public enum Player {
     PLAYER_ONE(1),
