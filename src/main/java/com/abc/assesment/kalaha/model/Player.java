@@ -9,10 +9,10 @@ import lombok.Getter;
 public enum Player {
     PLAYER_ONE(1),
     PLAYER_TWO(2);
-    private Integer id;
+    private Integer playerId;
 
-    Player(Integer id) {
-        this.id = id;
+    Player(Integer playerId) {
+        this.playerId = playerId;
     }
 
 }

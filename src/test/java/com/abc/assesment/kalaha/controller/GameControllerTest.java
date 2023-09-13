@@ -1,13 +1,10 @@
 package com.abc.assesment.kalaha.controller;
 
-import com.abc.assesment.kalaha.exception.KalahaGameException;
 import com.abc.assesment.kalaha.model.KalahaGame;
 import com.abc.assesment.kalaha.model.KalahaPit;
 import com.abc.assesment.kalaha.model.KalahaPlayGameRequest;
-import com.abc.assesment.kalaha.persistance.entity.KalahaGameEntity;
-import com.abc.assesment.kalaha.persistance.entity.KalahaPitEntity;
+
 import com.abc.assesment.kalaha.service.GameService;
-import com.abc.assesment.kalaha.service.GameServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.testng.annotations.AfterMethod;
@@ -18,12 +15,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.abc.assesment.kalaha.constants.GameConstants.DEFAULT_STONES;
+
 import static com.abc.assesment.kalaha.constants.GameConstants.IN_PROGRESS;
 import static com.abc.assesment.kalaha.constants.GameConstants.TOTAL_PITS;
 import static com.abc.assesment.kalaha.model.Player.PLAYER_ONE;
 import static org.easymock.EasyMock.anyInt;
-import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.expect;
 import static org.powermock.api.easymock.PowerMock.createMock;
 import static org.powermock.api.easymock.PowerMock.replayAll;

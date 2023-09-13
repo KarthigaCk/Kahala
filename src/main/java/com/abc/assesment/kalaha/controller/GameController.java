@@ -27,7 +27,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * */
 @Slf4j
 @RestController
-@RequestMapping(value = "/kahalaGame", produces = APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/kalahaGame", produces = APPLICATION_JSON_VALUE)
 public class GameController {
     private final GameService gameService;
 
@@ -40,7 +40,7 @@ public class GameController {
      *
      * @return KalahaGame New game with default stones added
      */
-    @PostMapping(value="/createNewGame")
+    @PostMapping
     public ResponseEntity<KalahaGame> createNewGame() {
         KalahaGame kahalaGame = gameService.createNewGame();
         log.info("Game Created");
@@ -78,7 +78,7 @@ public class GameController {
         return ResponseEntity.status(HttpStatus.OK).body(kalahaGame);
     }
     private boolean isInvalidPitId(int selectedPitId) {
-        return (selectedPitId < 1 || (selectedPitId > 6 && selectedPitId < 8) || selectedPitId > 13);
+        return (selectedPitId < 1 ||  selectedPitId == 7  || selectedPitId > 13);
     }
 
 }

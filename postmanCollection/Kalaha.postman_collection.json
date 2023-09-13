@@ -12,14 +12,14 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/kahalaGame",
+					"raw": "http://localhost:8080/kalahaGame",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"kahalaGame"
+						"kalahaGame"
 					]
 				}
 			},
@@ -31,14 +31,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8080/kahalaGame/1",
+					"raw": "http://localhost:8080/kalahaGame/1",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8080",
 					"path": [
-						"kahalaGame",
+						"kalahaGame",
 						"1"
 					]
 				}
@@ -50,6 +50,15 @@
 			"request": {
 				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"gameId\": 1,\r\n  \"selectedPitId\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "http://localhost:8080/kahalaGame/playGame",
 					"protocol": "http",

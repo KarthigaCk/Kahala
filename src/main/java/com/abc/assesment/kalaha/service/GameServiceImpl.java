@@ -48,13 +48,13 @@ public class GameServiceImpl implements GameService {
                                                             .build();
         kalahaRepository.save(kalahaGameEntity);
         log.info("New Game Started");
-        return mapKahalaGamefromEntity(kalahaGameEntity);
+        return mapKahalaGameFromEntity(kalahaGameEntity);
     }
     @Override
     public KalahaGame getGameInfo(Integer gameId) {
         KalahaGameEntity kalahaGameEntity = getKalahaGameEntity(gameId);
         log.info("GameService call completed");
-        return mapKahalaGamefromEntity(kalahaGameEntity);
+        return mapKahalaGameFromEntity(kalahaGameEntity);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class GameServiceImpl implements GameService {
         kalahaRepository.save(kalahaGameEntity);
         log.info("Play game service completed");
 
-        return mapKahalaGamefromEntity(kalahaGameEntity);
+        return mapKahalaGameFromEntity(kalahaGameEntity);
     }
 
     private boolean isGameInProgress(String gameStatus) {
@@ -181,10 +181,10 @@ public class GameServiceImpl implements GameService {
 
     private boolean isGameOver(KalahaGameEntity kalahaGameEntity) {
 
-        if (isPlayersNonHousePitsEmpty(PLAYER_ONE.getId(),kalahaGameEntity.getKalahaPits())
-                                       || isPlayersNonHousePitsEmpty(PLAYER_TWO.getId(),kalahaGameEntity.getKalahaPits())) {
-            addAllStonesToHouseIndex(PLAYER_ONE.getId(), kalahaGameEntity.getKalahaPits());
-            addAllStonesToHouseIndex(PLAYER_TWO.getId(), kalahaGameEntity.getKalahaPits());
+        if (isPlayersNonHousePitsEmpty(PLAYER_ONE.getPlayerId(), kalahaGameEntity.getKalahaPits())
+                                       || isPlayersNonHousePitsEmpty(PLAYER_TWO.getPlayerId(), kalahaGameEntity.getKalahaPits())) {
+            addAllStonesToHouseIndex(PLAYER_ONE.getPlayerId(), kalahaGameEntity.getKalahaPits());
+            addAllStonesToHouseIndex(PLAYER_TWO.getPlayerId(), kalahaGameEntity.getKalahaPits());
             kalahaGameEntity.getKalahaPits().stream()
                                             .filter(kalahaPit -> kalahaPit.getPitId() != 7 && kalahaPit.getPitId() != 14)
                                             .forEach(KalahaPitEntity::clear);
@@ -193,8 +193,8 @@ public class GameServiceImpl implements GameService {
         return false;
     }
 
-    private void addAllStonesToHouseIndex(Integer id, List<KalahaPitEntity> kalahaPits) {
-        if (id == PLAYER_ONE.getId()) {
+    private void addAllStonesToHouseIndex(Integer playerId, List<KalahaPitEntity> kalahaPits) {
+        if (playerId.equals(PLAYER_ONE.getPlayerId())) {
             OptionalInt optionalIntSum = kalahaPits.stream()
                                                    .filter(pit -> pit.getPitId() < 7)
                                                    .mapToInt(KalahaPitEntity::getStones)
@@ -203,7 +203,7 @@ public class GameServiceImpl implements GameService {
             kalahaPits.get(PLAYER_ONE_HOUSE_INDEX).addStones(sumOfStones);
         }
 
-        if (id == PLAYER_TWO.getId()) {
+        if (playerId.equals(PLAYER_TWO.getPlayerId())) {
             OptionalInt optionalIntSum = kalahaPits.stream()
                                                    .filter(pit -> pit.getPitId() > 7 && pit.getPitId() < 14)
                                                    .mapToInt(KalahaPitEntity::getStones)
@@ -214,9 +214,9 @@ public class GameServiceImpl implements GameService {
 
     }
 
-    private boolean isPlayersNonHousePitsEmpty(Integer id, List<KalahaPitEntity> kalahaPits) {
+    private boolean isPlayersNonHousePitsEmpty(Integer playerId, List<KalahaPitEntity> kalahaPits) {
 
-        List<KalahaPitEntity> relevantPits = id == PLAYER_ONE.getId()
+        List<KalahaPitEntity> relevantPits = playerId.equals(PLAYER_ONE.getPlayerId())
                                              ? kalahaPits.stream()
                                                          .filter(pit -> pit.getPitId() < 7)
                                                          .collect(Collectors.toList())
@@ -234,7 +234,7 @@ public class GameServiceImpl implements GameService {
                         .collect(Collectors.toList());
     }
 
-    private KalahaGame mapKahalaGamefromEntity(KalahaGameEntity kalahaGameEntity) {
+    private KalahaGame mapKahalaGameFromEntity(KalahaGameEntity kalahaGameEntity) {
         return KalahaGame.builder()
                          .gameId(kalahaGameEntity.getGameId())
                          .gameStatus(kalahaGameEntity.getGameStatus())
