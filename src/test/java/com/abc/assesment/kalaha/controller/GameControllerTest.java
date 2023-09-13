@@ -51,7 +51,7 @@ public class GameControllerTest {
     public void createNewGame_test() {
 
         expect(mockGameService.createNewGame())
-                .andReturn(getKalahaGameTestData());
+                              .andReturn(getKalahaGameTestData());
         replayAll();
         ResponseEntity<KalahaGame> kalahaGameResponseEntity = gameController.createNewGame();
         verifyAll();
@@ -67,7 +67,7 @@ public class GameControllerTest {
     public void getGame_test() {
 
         expect(mockGameService.getGameInfo(anyInt()))
-                .andReturn(getKalahaGameTestData());
+                              .andReturn(getKalahaGameTestData());
         replayAll();
         ResponseEntity<KalahaGame> kalahaGameResponseEntity = gameController.getGame(1);
         verifyAll();
@@ -83,7 +83,7 @@ public class GameControllerTest {
     public void playGame_test() {
 
         expect(mockGameService.playGame(anyInt(), anyInt()))
-                .andReturn(getKalahaGameTestData());
+                              .andReturn(getKalahaGameTestData());
         replayAll();
         ResponseEntity<KalahaGame> kalahaGameResponseEntity = gameController.playGame(getPlayGameRequest());
         verifyAll();
@@ -97,28 +97,25 @@ public class GameControllerTest {
 
     private KalahaPlayGameRequest getPlayGameRequest() {
 
-        return KalahaPlayGameRequest.builder().gameId(1).selectedPitId(6).build();
-    }
-
-    private KalahaPlayGameRequest getPlayGameRequestHousePitSelected() {
-
-        return KalahaPlayGameRequest.builder().gameId(1).selectedPitId(6).build();
+        return KalahaPlayGameRequest.builder()
+                                    .gameId(1)
+                                    .selectedPitId(6)
+                                    .build();
     }
 
     private KalahaGame getKalahaGameTestData() {
 
         return KalahaGame.builder()
-                .gameId(1)
-                .gameStatus(IN_PROGRESS)
-                .playersTurn(PLAYER_ONE)
-                .kalahaPits(addStonesTestData())
-                .build();
-
+                         .gameId(1)
+                         .gameStatus(IN_PROGRESS)
+                         .playersTurn(PLAYER_ONE)
+                         .kalahaPits(addStonesTestData())
+                         .build();
     }
 
     private List<KalahaPit> addStonesTestData() {
         return IntStream.rangeClosed(1, TOTAL_PITS)
-                .mapToObj(i -> new KalahaPit(i, (i == 7 || i == 14) ? 3 : 7))
-                .collect(Collectors.toList());
+                        .mapToObj(i -> new KalahaPit(i, (i == 7 || i == 14) ? 3 : 7))
+                        .collect(Collectors.toList());
     }
 }

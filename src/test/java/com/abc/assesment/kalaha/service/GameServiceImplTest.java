@@ -52,7 +52,7 @@ public class GameServiceImplTest {
     public void createNewGame_test() {
 
         expect(mockKalahaRepository.save(anyObject()))
-                .andReturn(new Object());
+                                   .andReturn(new Object());
         replayAll();
         KalahaGame kalahaGame = gameService.createNewGame();
         verifyAll();
@@ -67,7 +67,7 @@ public class GameServiceImplTest {
     @Test
     public void getGameInfo_test() {
         expect(mockKalahaRepository.findById(anyInt()))
-                .andReturn(Optional.ofNullable(getGameEntityTestData()));
+                                   .andReturn(Optional.ofNullable(getGameEntityTestData()));
         replayAll();
         KalahaGame kalahaGame = gameService.getGameInfo(1);
         verifyAll();
@@ -81,9 +81,9 @@ public class GameServiceImplTest {
     @Test
     public void playGame_Test() {
         expect(mockKalahaRepository.findById(anyInt()))
-                .andReturn(Optional.ofNullable(getGameEntityTestData()));
+                                   .andReturn(Optional.ofNullable(getGameEntityTestData()));
         expect(mockKalahaRepository.save(anyObject()))
-                .andReturn(new Object());
+                                   .andReturn(new Object());
         replayAll();
         KalahaGame kalahaGame = gameService.playGame(1, 5);
         verifyAll();
@@ -97,9 +97,9 @@ public class GameServiceImplTest {
     @Test(expectedExceptions = KalahaGameException.class)
     public void playGame_Test_gameStatusNotInProgress() {
         expect(mockKalahaRepository.findById(anyInt()))
-                .andReturn(Optional.ofNullable(getGameEntityTestData_gameStatusNotInProgress()));
+                                   .andReturn(Optional.ofNullable(getGameEntityTestData_gameStatusNotInProgress()));
         expect(mockKalahaRepository.save(anyObject()))
-                .andReturn(new Object());
+                                   .andReturn(new Object());
         replayAll();
         KalahaGame kalahaGame = gameService.playGame(1, 5);
         verifyAll();
@@ -109,28 +109,27 @@ public class GameServiceImplTest {
     private KalahaGameEntity getGameEntityTestData() {
 
         return KalahaGameEntity.builder()
-                .gameId(1)
-                .gameStatus(IN_PROGRESS)
-                .playersTurn(PLAYER_ONE)
-                .kalahaPits(addStonesTestData())
-                .build();
-
+                               .gameId(1)
+                               .gameStatus(IN_PROGRESS)
+                               .playersTurn(PLAYER_ONE)
+                               .kalahaPits(addStonesTestData())
+                               .build();
     }
 
     private KalahaGameEntity getGameEntityTestData_gameStatusNotInProgress() {
 
         return KalahaGameEntity.builder()
-                .gameId(1)
-                .gameStatus("Player 2 wins")
-                .playersTurn(PLAYER_ONE)
-                .kalahaPits(addStonesTestData())
-                .build();
+                               .gameId(1)
+                               .gameStatus("Player 2 wins")
+                               .playersTurn(PLAYER_ONE)
+                               .kalahaPits(addStonesTestData())
+                               .build();
 
     }
 
     private List<KalahaPitEntity> addStonesTestData() {
         return IntStream.rangeClosed(1, TOTAL_PITS)
-                .mapToObj(i -> new KalahaPitEntity(i, (i == 7 || i == 14) ? 3 : 7))
-                .collect(Collectors.toList());
+                        .mapToObj(i -> new KalahaPitEntity(i, (i == 7 || i == 14) ? 3 : 7))
+                        .collect(Collectors.toList());
     }
 }
