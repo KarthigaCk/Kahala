@@ -42,6 +42,8 @@ For building and running the application you need:
 ## From UI
 - After the application is started, Open the URL in your browser : http://localhost:8080/#/
 - Player can create a new game and start playing.
+  ![image](https://github.com/KarthigaCk/Kalaha/assets/139973861/c873dd22-88b4-4550-9275-a8fe0451cf02)
+
 ### GameController
 - Endpoint 1: `POST /kahalaGame`
     - Allows user to create new game
@@ -51,9 +53,5 @@ For building and running the application you need:
     - Allows user to play the game with post request body
  ### Swagger UI
   - After the application is started, Open the URL in your browser : [http://localhost:8080](http://localhost:8080/swagger-ui/index.html)
- - The below swagger UI will be displayed with all the application specification
-   ![image](https://github.com/KarthigaCk/Kalaha/assets/139973861/a5403bf2-6098-4afb-a402-325e1d750ee6)
-
-
 ### Postman Collection
 - /Assignment/postman/Kalaha.postman_collection.json
