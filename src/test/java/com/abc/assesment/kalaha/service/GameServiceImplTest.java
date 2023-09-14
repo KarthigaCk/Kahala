@@ -61,7 +61,6 @@ public class GameServiceImplTest {
         assertEquals(IN_PROGRESS, kalahaGame.getGameStatus());
         assertEquals(PLAYER_ONE, kalahaGame.getPlayersTurn());
         assertEquals(Integer.valueOf(DEFAULT_STONES), kalahaGame.getKalahaPits().get(1).getStones());
-
     }
 
     @Test
