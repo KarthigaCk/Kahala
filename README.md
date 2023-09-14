@@ -55,3 +55,12 @@ For building and running the application you need:
   - After the application is started, Open the URL in your browser : [http://localhost:8080](http://localhost:8080/swagger-ui/index.html)
 ### Postman Collection
 - /Assignment/postman/Kalaha.postman_collection.json
+
+### Product Backlog:
+- Personalize the gaming experience (Create User Profile, display high score etc)
+- Enhance UI 
+- Collect user feedback and use it to improve your application.
+- Configure a production-grade database server (e.g., PostgreSQL).
+- Use containerization (Docker) and orchestration (Kubernetes) for scalability
+- Monitor resource usage and scale up or down as needed.
+- Implement caching mechanisms for improved performance.
