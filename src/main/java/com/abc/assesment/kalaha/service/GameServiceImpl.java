@@ -68,9 +68,9 @@ public class GameServiceImpl implements GameService {
                                                                                 + kalahaGameEntity.getGameStatus());
         }
         //If player has selected other player's pit, throw an exception
-        if(isValidPitSelection(kalahaGameEntity, pitId)){
+        if(isInvalidPitSelection(kalahaGameEntity, pitId)){
             throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_PITID_SELECTION, "Please select your own pit"
-                                                                                       + kalahaGameEntity.getPlayersTurn());
+                                                                                + kalahaGameEntity.getPlayersTurn());
         }
         //Get stones from the selected pit
         Integer stonesInPit = kalahaGameEntity.getPitDetailsById(pitId).getStones();
@@ -98,33 +98,29 @@ public class GameServiceImpl implements GameService {
         List<KalahaPitEntity> allPits = kalahaGameEntity.getKalahaPits();
         clearSelectedPit(allPits, pitId);
         for (int i = 1; i <= stonesInPit; i++) {
-            /*The last stone lands in an own empty pit, the player
-            captures his own stone and all stones in the opposite pit */
-            if (i == stonesInPit) {
-                int nextPitId = pitId + 1;
-                if (isNextPitOwnedByPlayer(kalahaGameEntity, nextPitId)) {
-                    KalahaPitEntity nextPit = kalahaGameEntity.getPitDetailsById(nextPitId);
-                    if (nextPit.isEmpty()) {
-                        captureStonesFromOpponent(kalahaGameEntity, nextPitId, allPits);
-                        break;
-                    }
-                }
-            }
             //Handle circular movement between pits
             pitId = (pitId % TOTAL_PITS);
+            if (i == stonesInPit) {
+                /*The last stone lands in an own empty pit, the player
+            captures his own stone and all stones in the opposite pit */
+                int nextPitId = pitId + 1;
+                if (isNextEmptyPitOwnedByPlayer(kalahaGameEntity, nextPitId)) {
+                        captureStonesFromOpponent(kalahaGameEntity, nextPitId, allPits);
+                        break;
+                }
+                // If the last stone is added in the player's house they get one more chance
+                if (shouldGiveExtraTurn(kalahaGameEntity, pitId)) {
+                    isLastStoneOnPlayerSide = true;
+                }
+            }
             //Skipping  opponent's house pit
             if (shouldSkipOthersHousePit(kalahaGameEntity, pitId)) {
                 i--;
                 pitId++;
                 continue;
             }
-            // If the last stone is added in the player's house they get one more chance
-            if (i == stonesInPit && shouldGiveExtraTurn(kalahaGameEntity, pitId)) {
-                isLastStoneOnPlayerSide = true;
-            }
             allPits.get(pitId).addStones(1);
             pitId++;
-
         }
         if (!isLastStoneOnPlayerSide) {
             kalahaGameEntity.setPlayersTurn(kalahaGameEntity.getPlayersTurn() == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE);
@@ -152,13 +148,15 @@ public class GameServiceImpl implements GameService {
         allPits.get(oppositePitId - 1).clear();
     }
 
-    private boolean isNextPitOwnedByPlayer(KalahaGameEntity kalahaGameEntity, Integer nextPitId) {
+    private boolean isNextEmptyPitOwnedByPlayer(KalahaGameEntity kalahaGameEntity, Integer nextPitId) {
+        KalahaPitEntity nextPit = kalahaGameEntity.getPitDetailsById(nextPitId);
         return ((kalahaGameEntity.getPlayersTurn() == PLAYER_ONE && nextPitId < 7)
-                || (kalahaGameEntity.getPlayersTurn() == PLAYER_TWO && (nextPitId > 7 && nextPitId < 14)));
+                   || (kalahaGameEntity.getPlayersTurn() == PLAYER_TWO && (nextPitId > 7 && nextPitId < 14)))
+                && nextPit.isEmpty();
     }
 
-    private boolean isValidPitSelection(KalahaGameEntity kalahaGameEntity, Integer pitId) {
-       return ((kalahaGameEntity.getPlayersTurn() == PLAYER_ONE && pitId > 6)
+    private boolean isInvalidPitSelection(KalahaGameEntity kalahaGameEntity, Integer pitId) {
+        return ((kalahaGameEntity.getPlayersTurn() == PLAYER_ONE && pitId > 6)
                 || (kalahaGameEntity.getPlayersTurn() == PLAYER_TWO && pitId < 8));
     }
 
@@ -245,11 +243,11 @@ public class GameServiceImpl implements GameService {
 
     private List<KalahaPit> mapKahalaPitsFromEntity(List<KalahaPitEntity> kalahaPitEntities) {
         return kalahaPitEntities.stream()
-                                 .map(kalahaPitEntity -> KalahaPit.builder()
-                                                                  .pitId(kalahaPitEntity.getPitId())
-                                                                  .stones(kalahaPitEntity.getStones())
-                                                                  .build())
-                                 .collect(Collectors.toList());
+                                .map(kalahaPitEntity -> KalahaPit.builder()
+                                                                 .pitId(kalahaPitEntity.getPitId())
+                                                                 .stones(kalahaPitEntity.getStones())
+                                                                 .build())
+                                .collect(Collectors.toList());
     }
 
     private KalahaGameEntity getKalahaGameEntity(Integer gameId) {
@@ -260,4 +258,3 @@ public class GameServiceImpl implements GameService {
         return kalahaGameEntity.get();
     }
 }
-
