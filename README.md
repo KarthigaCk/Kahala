@@ -21,7 +21,7 @@ For building and running the application you need:
 - Git Hub
 - Angular11
 - HTML5
-- CSS
+- CSS3
 ## High Level Flow diagram
 
 ![KahalaSequenceDiagram](https://github.com/KarthigaCk/Kalaha/assets/139973861/6d32a1a0-c849-4bda-9847-b92a69e9bb43)
