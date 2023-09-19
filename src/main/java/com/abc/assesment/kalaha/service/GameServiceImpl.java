@@ -72,14 +72,11 @@ public class GameServiceImpl implements GameService {
             throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_PITID_SELECTION, "Please select your own pit"
                                                                                 + kalahaGameEntity.getPlayersTurn());
         }
-        //Get stones from the selected pit
-        Integer stonesInPit = kalahaGameEntity.getPitDetailsById(pitId).getStones();
-        //Check if the selected pit has stones
-        if (stonesInPit == 0) {
+
+        if (isSelectedPitEmpty(getStonesFromSelectedPit(kalahaGameEntity, pitId))) {
             throw new KalahaGameException(KalahaGameExceptionCodes.INVALID_PITID_SELECTION, "Please select a pit with stones");
         }
-        //Sowing stones
-        sowStones(kalahaGameEntity,pitId,stonesInPit);
+        sowStones(kalahaGameEntity,pitId);
         if (isGameOver(kalahaGameEntity)) {
             setWinner(kalahaGameEntity);
         }
@@ -89,12 +86,21 @@ public class GameServiceImpl implements GameService {
         return mapKahalaGameFromEntity(kalahaGameEntity);
     }
 
+    private boolean isSelectedPitEmpty(Integer stonesInPit) {
+        return stonesInPit == 0;
+    }
+
+    private Integer getStonesFromSelectedPit(KalahaGameEntity kalahaGameEntity, Integer pitId) {
+        return  kalahaGameEntity.getPitDetailsById(pitId).getStones();
+    }
+
     private boolean isGameInProgress(String gameStatus) {
         return gameStatus.equals(IN_PROGRESS);
     }
 
-    private void sowStones(KalahaGameEntity kalahaGameEntity,Integer pitId,Integer stonesInPit) {
+    private void sowStones(KalahaGameEntity kalahaGameEntity,Integer pitId) {
         boolean isLastStoneOnPlayerSide = false;
+        Integer stonesInPit = getStonesFromSelectedPit(kalahaGameEntity, pitId);
         List<KalahaPitEntity> allPits = kalahaGameEntity.getKalahaPits();
         clearSelectedPit(allPits, pitId);
         for (int i = 1; i <= stonesInPit; i++) {
